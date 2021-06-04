@@ -44,10 +44,6 @@ connection.onCompletion(function (params) {
             if (text == " ") {
                 return null;
             }
-            if (text == "s") {
-                item = { label: "#salut" };
-                messages.items.push(item);
-            }
         }
     }
     else {
@@ -88,15 +84,11 @@ function getFileNames() {
     return files;
 }
 connection.onCompletionResolve(function (item) {
-    item.detail = 'This is a special hello world function';
+    var file = fs_1.readFileSync(item.label + ".md");
+    item.detail = item.label;
     item.documentation = {
         kind: node_1.MarkupKind.Markdown,
-        value: [
-            '# Heading',
-            '```typescript',
-            'console.log("Hello World");',
-            '```'
-        ].join('\n')
+        value: file.toString()
     };
     return item;
 });

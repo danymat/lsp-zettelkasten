@@ -4,7 +4,7 @@ import { TextDocuments, createConnection, InitializeResult, ProposedFeatures,
     WorkspaceFolder} from "vscode-languageserver/node";
 
     import { TextDocument } from "vscode-languageserver-textdocument";
-    import { readdirSync } from "fs"
+    import { readdirSync, readFileSync } from "fs"
 
     const documents = new TextDocuments(TextDocument);
     let connection = createConnection(ProposedFeatures.all);
@@ -50,59 +50,53 @@ import { TextDocuments, createConnection, InitializeResult, ProposedFeatures,
                     end: {line: line, character: char},
                 })
                 if (text == " ") { return null }
-                if (text == "s") { item = { label: "#salut" }; messages.items.push(item) }
-            }
         }
-        else {
-            if (document) {
-                let text = document.getText({ 
-                    start: {line: line, character: char - 2 },
-                    end: {line: line, character: char}
-                })
-                let beforeText = document.getText({
-                    start: { line: line, character: char - 3 },
-                    end: { line: line, character: char - 2 }
-                })
-                if ( beforeText == '[' ) { return null }
-                else if ( text == '[[' ) {
-                    let item: CompletionItem = { label: "" }
-                    getFileNames().forEach((file) => { 
-                        item = {label: file } 
-                        messages.items.push(item)
-                    })
-                }
-                else return null
-        }
-        }
-        return messages
-    })
-
-    function getFileNames() {
-        let uri = workspaceFolders.map((ws) => ws.name)
-        let files: string[] = []
-        uri.forEach(u => {
-            readdirSync(u).forEach(file => { 
-                if ( !file.startsWith('.') )
-                    files.push(file.slice(0, -3)) 
-            })
-        })
-        return files
     }
+    else {
+        if (document) {
+            let text = document.getText({ 
+                start: {line: line, character: char - 2 },
+                end: {line: line, character: char}
+            })
+            let beforeText = document.getText({
+                start: { line: line, character: char - 3 },
+                end: { line: line, character: char - 2 }
+            })
+            if ( beforeText == '[' ) { return null }
+            else if ( text == '[[' ) {
+                let item: CompletionItem = { label: "" }
+                getFileNames().forEach((file) => { 
+                    item = {label: file } 
+                    messages.items.push(item)
+                })
+            }
+            else return null
+    }
+    }
+    return messages
+})
+
+function getFileNames() {
+    let uri = workspaceFolders.map((ws) => ws.name)
+    let files: string[] = []
+    uri.forEach(u => {
+        readdirSync(u).forEach(file => { 
+            if ( !file.startsWith('.') )
+                files.push(file.slice(0, -3)) 
+        })
+    })
+    return files
+}
 
     connection.onCompletionResolve((item): CompletionItem => {
-
-        item.detail = 'This is a special hello world function';
+        let file = readFileSync(`${item.label}.md`)
+        item.detail = item.label
         item.documentation =  {
             kind: MarkupKind.Markdown,
-            value: [
-                '# Heading',
-                '```typescript',
-                'console.log("Hello World");',
-                '```'
-            ].join('\n')};
+            value: file.toString()
+        }
             return item;
     });
-
 
     documents.onWillSave((event) => {
         connection.console.log('On Will save received');
