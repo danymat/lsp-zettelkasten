@@ -3,7 +3,7 @@
 
 This repo is a basic implementation of a lsp for zettelksaten markdown files
 
-## Roadmap
+## Features
 
 - [x] Support for link completion for type `[[link here]]`.
 - [ ] Clickable links inside `[[..]]`.
