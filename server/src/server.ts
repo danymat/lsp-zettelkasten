@@ -3,53 +3,53 @@ import { TextDocuments, createConnection, InitializeResult, ProposedFeatures,
     MarkupKind, 
     WorkspaceFolder} from "vscode-languageserver/node";
 
-    import { TextDocument } from "vscode-languageserver-textdocument";
-    import { readdirSync, readFileSync } from "fs"
+import { TextDocument } from "vscode-languageserver-textdocument";
+import { readdirSync, readFileSync } from "fs"
 
-    const documents = new TextDocuments(TextDocument);
-    let connection = createConnection(ProposedFeatures.all);
-    let workspaceFolders: WorkspaceFolder[] = []
+const documents = new TextDocuments(TextDocument);
+let connection = createConnection(ProposedFeatures.all);
+let workspaceFolders: WorkspaceFolder[] = []
 
-    connection.onInitialize((params) => {
-        params.workspaceFolders
-        workspaceFolders = params.workspaceFolders!
-        const result: InitializeResult = {
-            capabilities: {
-                textDocumentSync : TextDocumentSyncKind.Incremental,
-                completionProvider: {
-                    resolveProvider: true,
-                    triggerCharacters: ["#", "["]
-                }
-                //hoverProvider: true
+connection.onInitialize((params) => {
+    params.workspaceFolders
+    workspaceFolders = params.workspaceFolders!
+    const result: InitializeResult = {
+        capabilities: {
+            textDocumentSync : TextDocumentSyncKind.Incremental,
+            completionProvider: {
+                resolveProvider: true,
+                triggerCharacters: ["#", "["]
             }
+            //hoverProvider: true
         }
-        return result;
-    })
+    }
+    return result;
+})
 
-    connection.onInitialized(() => {
-        connection.console.log("Initialized");
-    })
+connection.onInitialized(() => {
+    connection.console.log("Initialized");
+})
 
-    connection.onCompletion((params: CompletionParams) => {
-        let line = params.position.line
-        let char = params.position.character
-        let messages: CompletionList = { isIncomplete: false, items : [] }
+connection.onCompletion((params: CompletionParams) => {
+    let line = params.position.line
+    let char = params.position.character
+    let messages: CompletionList = { isIncomplete: false, items : [] }
 
-        let document = documents.get(params.textDocument.uri)
-        if (params.context?.triggerCharacter == "#") {
+    let document = documents.get(params.textDocument.uri)
+    if (params.context?.triggerCharacter == "#") {
 
-            // Creating messages
-            // // TODO
-            let item: CompletionItem = { label: "#foo" }
-            messages.items.push(item)
+        // Creating messages
+        // // TODO
+        let item: CompletionItem = { label: "#foo" }
+        messages.items.push(item)
 
-            // Resets if the user press space button
-            if ( document ) {
-                let text = document.getText({
-                    start: {line: line , character: char - 1},
-                    end: {line: line, character: char},
-                })
-                if (text == " ") { return null }
+        // Resets if the user press space button
+        if ( document ) {
+            let text = document.getText({
+                start: {line: line , character: char - 1},
+                end: {line: line, character: char},
+            })
+            if (text == " ") { return null }
         }
     }
     else {
@@ -71,7 +71,7 @@ import { TextDocuments, createConnection, InitializeResult, ProposedFeatures,
                 })
             }
             else return null
-    }
+        }
     }
     return messages
 })
@@ -82,25 +82,25 @@ function getFileNames() {
     uri.forEach(u => {
         readdirSync(u).forEach(file => { 
             if ( !file.startsWith('.') )
-                files.push(file.slice(0, -3)) 
+            files.push(file.slice(0, -3)) 
         })
     })
     return files
 }
 
-    connection.onCompletionResolve((item): CompletionItem => {
-        let file = readFileSync(`${item.label}.md`)
-        item.detail = item.label
-        item.documentation =  {
-            kind: MarkupKind.Markdown,
-            value: file.toString()
-        }
-            return item;
-    });
+connection.onCompletionResolve((item): CompletionItem => {
+    let file = readFileSync(`${item.label}.md`)
+    item.detail = item.label
+    item.documentation =  {
+        kind: MarkupKind.Markdown,
+        value: file.toString()
+    }
+    return item;
+});
 
-    documents.onWillSave((event) => {
-        connection.console.log('On Will save received');
-    });
+documents.onWillSave((event) => {
+    connection.console.log('On Will save received');
+});
 
-    documents.listen(connection);
-    connection.listen();
+documents.listen(connection);
+connection.listen();
