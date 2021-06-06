@@ -1,6 +1,6 @@
 # lsp-zettelkasten
 
-This repo is a basic implementation of a lsp for zettelksaten markdown files
+This repo is a basic implementation of a lsp for zettelkasten markdown files
 
 ![movie-1](https://github.com/lsp-zettelkasten/lsp-zettelkasten/blob/main/.assets/vid1.mov)
 
